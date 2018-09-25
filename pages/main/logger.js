@@ -1,6 +1,3 @@
-/**
- * Created by leon.li on 2015/5/28.
- */
 var _cache = {};
 
 function log(level, text) {

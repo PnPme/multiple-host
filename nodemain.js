@@ -1,14 +1,8 @@
-/**
- * Created by leon.li on 2015/5/4.
- */
-
-var easyProxy = require("./lib/easyproxy.js");
-var findHost = require("./lib/findhost.js");
-var dirname = require('./lib/util').dirname;
+var MiniProxy = require("mini-proxy");
+var easyProxy = require("./lib/easyproxy");
+var findHost = require("./lib/findhost");
 var platform = require("./lib/platform");
 var dns = require('dns');
-var path = require('path');
-//var execPath = path.dirname( process.execPath );
 
 var CONFIG = {
     "hostFilePath": null,
@@ -21,44 +15,64 @@ function setConfig(name, value) {
     CONFIG[name] = value;
 }
 
-
 function startNode() {
     var logger = global.window.logger;
-    // var gui = global.window.nwDispatcher.requireNwGui();
-    // var hostPath = path.join( gui.App.dataPath , './hosts');
 
     logger.doLog("log", "node代码启动成功,端口：" + ( global.window.localStorage.getItem("serverPort") || 9393 ));
 
-    var nwProxy = new easyProxy({
-        port:  global.window.localStorage.getItem("serverPort") || 9393,
-        onBeforeRequest: function(req) {
+    // var nwProxy = new easyProxy({
+    //     port:  global.window.localStorage.getItem("serverPort") || 9393,
+    //     onBeforeRequest: function(req) {
+    //         try {
+    //             var host = findHost(global.window.__hostState, req.host);
+    //             var sysTemHost = findHost(CONFIG.systemHostFilePath, req.host);
+    //             if (host) {
+    //                 logger.doLog("log", req.host + "被代理到：" + host);
+    //                 req.host = host;
+    //                 req.replace = true;
+    //             }
+    //             if (sysTemHost && !host) {
+    //                 req.needDnsResolve = true;
+    //             }
+    //         } catch(e) {
+    //             logger.doLog("error", e.message);
+    //         }
+    //     },
+    //     onServerError: function(e) {
+    //         logger.doLog("error", "serverError" + e.message);
+    //     },
+    //     onRequestError: function(e) {
+    //         console.log(e.message);
+    //     }
+    // });
+    // nwProxy.start();
+
+    var myProxy = new MiniProxy({
+        "port": 9393,
+        "onBeforeRequest": function(req) {
+            logger.doLog("log", "proxy request :" + req.host + (req.path || ''));
             try {
                 var host = findHost(global.window.__hostState, req.host);
                 var sysTemHost = findHost(CONFIG.systemHostFilePath, req.host);
-
                 if (host) {
                     logger.doLog("log", req.host + "被代理到：" + host);
                     req.host = host;
                     req.replace = true;
                 }
                 if (sysTemHost && !host) {
-
                     req.needDnsResolve = true;
                 }
-
-            }
-            catch(e) {
+            } catch(e) {
                 logger.doLog("error", e.message);
             }
         },
-        onServerError: function(e) {
-            logger.doLog("error", "serverError" + e.message);
+        "onBeforeResponse": function(remoteResponse) {
         },
-        onRequestError: function(e) {
+        "onRequestError": function(e, req, res) {
             console.log(e.message);
         }
     });
-    nwProxy.start();
+    myProxy.start();
 }
 
 var _cache = {};
@@ -111,4 +125,3 @@ module.exports = {
     start: startNode,
     setConfig: setConfig
 }
-

@@ -32,3 +32,10 @@ Thumbs.db
 # *.zip
 # *.tar
 # *.tar.gz
+node_modules/
+!node_modules/.bin
+!node_modules/async
+!node_modules/del
+!node_modules/ncp
+!node_modules/request
+!node_modules/semver
